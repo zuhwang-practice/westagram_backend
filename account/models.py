@@ -23,3 +23,7 @@ class UserProfile(models.Model):
 
     class Meta:
         db_table = 'user_profile'
+
+
+# 정참조(바라보는, fk) : select_related
+# 역참조(바라봐지는, ...) :prefetch_related
