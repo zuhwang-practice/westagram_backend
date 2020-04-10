@@ -16,7 +16,7 @@ class User(models.Model):
 class UserProfile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE,
                              related_name='user_uniq_id')
-    image_url = models.CharField(max_length=300)
+    image_url = models.CharField(max_length=300, null=True)
     description = models.CharField(max_length=100)
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
