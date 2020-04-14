@@ -1,32 +1,39 @@
 from django.db import models
-from django.utils import timezone
 
-# 모델불러오기
-from account.models import User, UserProfile
 # Create your models here.
 # 피드
 # 댓글
 
 
 class Comment(models.Model):
-    many_to_many = models.ManyToManyField(through='',)
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE(), related_name='유저 넘버')
-    comment = models.TextField()
-    create_at = models.DateTimeField(auto_now_add=True)
-    update_at = models.DateTimeField(auto_now=True)
+    user      = models.ForeignKey('account.User', on_delete = models.CASCADE,
+                                  related_name = 'commant_author')
+    comment   = models.TextField()
+    like      = models.IntegerField(verbose_name = 'likes', null = True)
+    create_at = models.DateTimeField(auto_now_add = True)
+    update_at = models.DateTimeField(auto_now = True)
+
+    class Meta:
+        db_table = 'comments'
 
 
 class Feed(models.Model):
-    # 회원장보가 삭제될때 피드도 같이 삭제 될것잉가..응...!
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE(), related_name='유저넘버')
-    user_profile = models.ForeignKey(
-        UserProfile,  on_delete=models.PROTECT(), related_name='작성자프로필 유저사진,소개글')
-    comment = ForeignKey(
-        Comment, ond_delete=models.PROTECT(), related_name='댓글목록')
-    image_url = models.CharField(max_length=300, verbose_name='피드사진')
-    description = models.TextField(verbose_name='피드내용')
-    like = models.IntegerField(verbose_name='좋아요수')  # 좋아요기능 없음으로 숫자 집넣깅!
-    create_at = models.DateTimeField(auto_now_add=True)
-    update_at = models.DateTimeField(auto_now=True)
+    user         = models.ForeignKey('account.User', on_delete = models.CASCADE, related_name = 'author')
+    user_profile = models.ForeignKey('account.UserProfile', on_delete = models.SET_NULL, null = True, related_name = 'avatar')
+    image_url    = models.CharField(max_length = 300, verbose_name = 'image')
+    content      = models.TextField(verbose_name = 'content')
+    like         = models.IntegerField(verbose_name = 'likes', null = True)
+    create_at    = models.DateTimeField(auto_now_add = True)
+    update_at    = models.DateTimeField(auto_now = True)
+    comment      = models.ManyToManyField('Comment', through = 'FeedComment', related_name = 'feed_comment')
+    feed         = models.ManyToManyField('Feed', through = 'FeedComment', related_name = 'comment_feed')
+
+    class Meta:
+        db_table = 'feeds'
+
+class FeedComment(models.Model):
+    feed    = models.ForeignKey('Feed', on_delete = models.CASCADE, related_name = 'feed_id')
+    comment = models.ForeignKey('Comment', on_delete = models.CASCADE, related_name = 'comment_id')
+
+    class Meta:
+        db_table = 'feed_comment'
