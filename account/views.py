@@ -1,34 +1,32 @@
-import json  # 제이슨으로 변환할때 필요
-import jwt
+import bcrypt , json, jwt
 
 from django.shortcuts import render
 from django.views import View
 from django.http import JsonResponse
 
-
 # DB가져오기
 from .models import User
-# Create your views here.
-
+# 알고리즘, 비밀키 가져오기
+from config.my_settings import SECRET_KEY, ALGORITHM
 
 class SignUp(View):
     def post(self, req):
-        data = json.loads(req.body)
+        data      = json.loads(req.body)
         # print('username -', data['user_name'])
         # print('password -', data['password'])
         user_name = data['user_name']
-        password = data['password']
-        # id = 6~12자 사이 영문 대소문자+ 숫자0-9 만가능
-        # pw = 영문 대소문자+숫자 0-9+특수문자 ~!@#$%^&*_+?,. 최대 25자 가능
-        # user_list = User.objects.all()  # 데이터테이블 전체 가저오기
-        # for i in range(len(user_list)):  # 테이블 행 각각 가져오기
-        # print(user_list[i].user_name)
-        # print(user_list[i].password)
+        password  = data['password']
 
+        # ? 비밀번호 암호화
+        salt = bcrypt.gensalt() # bytes salt
+        password = password.encode('utf-8') # 입력받은 비밀번호 bytes로 인코딩
+        hashed_password = bcrypt.hashpw(password, salt) # 인자로 바이트비번, 바이트솔트 넣기
+        str_hashed_password = hashed_password.decode('utf-8') # DB에 넣기 위해 문자열로 변환
+        
         if User.objects.filter(user_name=user_name).exists():
             return JsonResponse({'message': '사용할수 없는 아이디'}, status=400)
         else:
-            User(user_name=user_name, password=password).save()
+            User(user_name=user_name, password=str_hashed_password).save()
             # ! save()보다 create 사용하는 것을 추천한다
             # * 왜냐하면, create로 하면 테이블을 생성, 변수에 담아 쓸수 있다.
             # * 왜 그래야 하느냐? 쿼리 효율을 생각해야 한다. 한번 DB에 접근하면 비용이 발생한다.
@@ -39,20 +37,27 @@ class SignUp(View):
 
 
 class SignIn(View):
+    # 비밀번호 체크
+    def check_password(user, input_pw):
+        byte_db_pw = user.password.encode('utf-8') # 복화화를 위해 바이트로 변형 
+        byte_input_pw = input_pw.encode('utf-8')   # 복화화를 위해 바이트로 변형
+        result = input_pw.bcrypt.checkpw(byte_input_pw, byte_db_pw) # 해쉬하여 값비교 > T/F 결과 리턴
+        return result
+    
     # 로그인 로직
     def post(self, req):
-        data = json.loads(req.body)
+        data      = json.loads(req.body)
         user_name = data['user_name']
-        password = data['password']
+        password  = data['password']
 
         user_info = User.objects.filter(user_name=user_name)
         # print('유저네임: ', user_info[0].user_name)
-        print(bool(user_info))
+        # print(bool(user_info))
         if user_info:  # 유저정보가 있을 때
-            if user_info[0].user_name == user_name and user_info[0].password == password:
+            if user_info[0].user_name == user_name and self.check_password(user_info[0], password):
               # jwt로 encode하면 byte로 바뀐다 그래서 문자열로 변환하는 것이 필요하다. 변환은 decode('utf-8')을 통해 진행한다. .. 만약 디코드 안하고 응답보내면 500에러~~
                 token = jwt.encode(
-                    {'user_name': user_name}, 'SECRET', algorithm='HS256').decode('utf-8')
+                    {'user_name': user_name}, SECRET_KEY, ALGORITHM).decode('utf-8')
                 return JsonResponse({'token': token}, status=200)
             else:
                 return JsonResponse({'message': '비밀번호 틀림'}, status=400)
@@ -61,3 +66,4 @@ class SignIn(View):
 
         # print(data['user_name'], data['password'])
     # ? try & except 를 어떻게 언제 쓰야할까
+    # ! status.. 음 어떻게 보내야 할까나 ? 
