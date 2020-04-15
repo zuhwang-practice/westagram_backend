@@ -1,8 +1,9 @@
 import bcrypt , json, jwt
 
+from config.util      import login_required
 from django.shortcuts import render
-from django.views import View
-from django.http import JsonResponse
+from django.views     import View
+from django.http      import JsonResponse
 
 # DB가져오기
 from .models import User
@@ -34,7 +35,6 @@ class SignUp(View):
             # create로 변수를 담으면 DB에 접근할 필요없어 비용을 아낄수 있고,
             # 귀찮음을 격지 않아도 된다(테이블 목록 가져와서 몇번 인덱스에 필드명 뭐시기 가져와라 같은..)
             return JsonResponse({'message': '성공'}, status=200)
-
 
 class SignIn(View):
     # 비밀번호 체크
