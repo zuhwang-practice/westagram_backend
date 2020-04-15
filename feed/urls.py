@@ -4,5 +4,7 @@ from . import views
 
 
 urlpatterns = [
-    path('', views.Feed.as_view()),  # feed에 들어서면 get으로 보내기, post 코멘트 받기
+    # 댓글 달을 피드의 id를 전달받자 
+    path('/feed', views.Feed.as_view()),
+    path('/feed/comment', views.Comment.as_view()),
 ]
