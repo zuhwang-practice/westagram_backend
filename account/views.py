@@ -49,10 +49,8 @@ class SignIn(View):
         data      = json.loads(req.body)
         user_name = data['user_name']
         password  = data['password']
-
         user_info = User.objects.filter(user_name=user_name)
         # print('유저네임: ', user_info[0].user_name)
-        # print(bool(user_info))
         if user_info:  # 유저정보가 있을 때
             if user_info[0].user_name == user_name and self.check_password(user_info[0].password, password):
               # jwt로 encode하면 byte로 바뀐다 그래서 문자열로 변환하는 것이 필요하다. 변환은 decode('utf-8')을 통해 진행한다. .. 만약 디코드 안하고 응답보내면 500에러~~
@@ -63,6 +61,5 @@ class SignIn(View):
         else:
             return JsonResponse({'message': '없는 유저'}, status=400)
 
-        # print(data['user_name'], data['password'])
     # ? try & except 를 어떻게 언제 쓰야할까
     # ! status.. 음 어떻게 보내야 할까나 ? 
