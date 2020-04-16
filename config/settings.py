@@ -27,7 +27,7 @@ SECRET_KEY = 'zy3n1_d+&8%x03#-$$2i18ga7+d5&q%d_5ki8jd8_*%$ju3(_4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'account.apps.AccountConfig',
     'feed.apps.FeedConfig',
-    'corsheaders'  # CORS 추가 : 보안설정
+    'corsheaders',  # CORS 추가 : 보안설정
 ]
 
 MIDDLEWARE = [

@@ -19,39 +19,51 @@ class FeedView(View):
         # 로그인이 됬는지 확인, 유저정보 확인!
         # 각각의 DB에서 
         # ! 관계가 있는 테이블은 조인해서 가져와야 한다.
+        # print(req.user)
         # req.user # 회원인증을 통해 리턴받은 해당 유저의 recode가 들어가 있당.
-        print(req.user) ## req.user에 있는 정보 확인
-        
         # 로그인한 유저의 feed..가져와야 하는뎅 피드는 그냥 1개이니 그냥 뿌리기..
-        feed_list = Feed.objects.all()
-        # print(feed_list)
-        print('여기까진 됭에', feed_list)
+        feed_list = Feed.objects.select_related('user').all()
+        # ? select_related(테이블병)를 연결한 상태라면 user테이블을 거치지 않고 user_profile 의 정보를 가져올 수 있다?
+        
+        
         result = []
-        # for li in feed_list:
+        for li in feed_list:
             # li.user.user_name  # => hwang, bludeberry
             # li.comment.values() # =>  QuerySet[{...},{...}]
-            # ! 코멘트를 담자 예외처리 피료한겨?
-            # comment = li.comment.all().only("user.user_name", "comment") # 특정컬럼 가져오기
+            # # ! 코멘트를 담자 예외처리 피료한겨?
+            # comment = list(li.comment.all().only("user.user_name", "comment")) # 특정컬럼 가져오기
             # print('---------------')
-            # print('이름',li.user.user_name)
-            # print('유저사진주소',li.user_profile)
-            # print('피드사진주소',li.feed.image_url)
-            # print('피드내용',li.feed.content)
+            # print('이름', li.user.user_name)
+            # ! 만약 유저사진이 딱 1개일 경우 절대적으로, get()으로 하면 [0]인덱스로 접근하지 않아도 된다.
+            # 여러게를 한번에 받아오는 방법알아보기, [0]으로 접근하는 방법 말고 다른 방법은 뭐가 있을지 알아보자.
+            # print('유저사진주소',li.user.user_uniq_id.filter(user_id=li.user_id)[0].image_url) # 유저사진 들고오려는데.. 오케해야되는규!?
+            # print('피드사진주소',li.image_url)
+            # print('피드내용',li.content)
+            # print('코멘트 내용인데?',li.comment)
+            # 메니투매니 일때는..?? ...코멘트 단 유저와 코멘트내용을 가져와서 리스트로 담아야지~
             # print('---------------')
-            # result.append({
-            #     'author':li.user.user_name, # FK일 경우, models.py에서 지정한 컬럼이름과, 실제 대상 테이블의 컬럼명을 입력한다.
-            #     'author_img':li.user_profile.image_url, # ? 이렇게 쓰는거야? 응 이렇게 쓰는겨 
-            #     'image_url' :li.feed.image_url, 
-            #     'content':li.feed.content,
-            #     # 'comment': comment # 리스트가 담기죠
-            # })
+            def check_comment_value(comment):
+                if not comment:
+                    return []
+                else:
+                    pass
+                  
+            result.append({
+                'author':li.user.user_name, # FK일 경우, models.py에서 지정한 컬럼이름과, 실제 대상 테이블의 컬럼명을 입력한다.
+                'author_img': li.user.user_uniq_id.filter(user_id=li.user_id)[0].image_url,
+                'image_url' :li.image_url, 
+                'content': li.content,
+                'like': li.like,
+                'comment': check_comment_value(li.comment) # 리스트가 담기죠
+            })
         
-        return JsonResponse({'data' :result}, status=200)
+        return JsonResponse({'data' : result }, status=200)
         
           
     
     def post(self, req):
         data = req.body # 바디 정보 담기
+        
         return JsonResponse({'message': 'DB update'}, status=200)
       
       
@@ -87,5 +99,10 @@ class CommentView():
         token = req.headers.get('Authorization', None) # 해더에서 담긴 토큰 꺼내기
         data  = json.loads(req.body) # 바디 데이터 꺼내기
         return JsonResponse({'message':'음... 코뮁트으'}, status=200)
+    
+    @login_required
+    def get(self, req):
+        print(req.user)
+        return JsonResponse({'message':'코멩트겟!', }, status=200)
         
         
