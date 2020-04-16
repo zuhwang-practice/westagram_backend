@@ -120,7 +120,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# CORS 추가
+# CORS 추가 : 같은 와이파이 내에서 내컴퓨터 서버에 들어올 수 있게 해준다.
+# 같은 와이 파이가 아니면 , aws에 올리던지 해서 접속해야함.
+# 즉,. 같은 와이파이 내의 다른 아이피로 내컴퓨터로 접속 할수 있게 한다.
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 
