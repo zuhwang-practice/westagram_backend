@@ -10,6 +10,15 @@ from .models import User
 # 알고리즘, 비밀키 가져오기
 from config.my_settings import SECRET_KEY, ALGORITHM
 
+
+def check_password( db_pw, input_pw):
+    byte_db_pw = db_pw.encode('utf-8') # 복화화를 위해 바이트로 변형 
+    byte_input_pw = input_pw.encode('utf-8')   # 복화화를 위해 바이트로 변형
+    result = bcrypt.checkpw(byte_input_pw, byte_db_pw) # 해쉬하여 값비교 > T/F 결과 리턴
+    return result
+
+
+
 class SignUp(View):
     def post(self, req):
         data      = json.loads(req.body)
@@ -36,30 +45,29 @@ class SignUp(View):
             # 귀찮음을 격지 않아도 된다(테이블 목록 가져와서 몇번 인덱스에 필드명 뭐시기 가져와라 같은..)
             return JsonResponse({'message': '성공'}, status=200)
 
+
 class SignIn(View):
     # 비밀번호 체크
-    def check_password(self, db_pw, input_pw):
-        byte_db_pw = db_pw.encode('utf-8') # 복화화를 위해 바이트로 변형 
-        byte_input_pw = input_pw.encode('utf-8')   # 복화화를 위해 바이트로 변형
-        result = bcrypt.checkpw(byte_input_pw, byte_db_pw) # 해쉬하여 값비교 > T/F 결과 리턴
-        return result
-    
-    # 로그인 로직
-    def post(self, req):
-        data      = json.loads(req.body)
-        user_name = data['user_name']
-        password  = data['password']
-        user_info = User.objects.filter(user_name=user_name)
-        # print('유저네임: ', user_info[0].user_name)
-        if user_info:  # 유저정보가 있을 때
-            if user_info[0].user_name == user_name and self.check_password(user_info[0].password, password):
-              # jwt로 encode하면 byte로 바뀐다 그래서 문자열로 변환하는 것이 필요하다. 변환은 decode('utf-8')을 통해 진행한다. .. 만약 디코드 안하고 응답보내면 500에러~~
-                token = jwt.encode({'user_name': user_name}, SECRET_KEY['secret'], ALGORITHM)
-                return JsonResponse({'token': token.decode('utf-8')}, status=200)
+    try : 
+        def post(self, req):
+            data      = json.loads(req.body)
+            # password  = data['password'] # ! 데이터는 날거로 받는것보다 get(_ , None)과 같이 에러를 잡아 줄 수 있게 가져오는 것이 좋다.
+            user_name = data.get('user_name' , None)
+            password = data.get('password' , None)
+            user_info = User.objects.filter(user_name=user_name)
+            # print('유저네임: ', user_info[0].user_name)
+            if user_info:  # 유저정보가 있을 때
+                if user_info[0].user_name == user_name and check_password(user_info[0].password, password):
+                  # jwt로 encode하면 byte로 바뀐다 그래서 문자열로 변환하는 것이 필요하다. 변환은 decode('utf-8')을 통해 진행한다. .. 만약 디코드 안하고 응답보내면 500에러~~
+                    token = jwt.encode({'user_name': user_name}, SECRET_KEY['secret'], ALGORITHM)
+                    return JsonResponse({'token': token.decode('utf-8')}, status=200)
+                else:
+                    return JsonResponse({'message': '비밀번호 틀림'}, status=400)
             else:
-                return JsonResponse({'message': '비밀번호 틀림'}, status=400)
-        else:
-            return JsonResponse({'message': '없는 유저'}, status=400)
+                return JsonResponse({'message': '없는 유저'}, status=400)
+    except TypeError:
+        JsonResponse({"message" : '타입에러다'}, status=400)
+
 
     # ? try & except 를 어떻게 언제 쓰야할까
     # ! status.. 음 어떻게 보내야 할까나 ? 

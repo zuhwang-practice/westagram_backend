@@ -19,7 +19,6 @@ from .views import Index
 
 urlpatterns = [
     path('', Index.as_view()),
-    path('account', include('account.urls')),
-    path('feed', include('feed.urls'))
-    
+    path('account/', include('account.urls')),
+    path('feed/', include('feed.urls'))
 ]
