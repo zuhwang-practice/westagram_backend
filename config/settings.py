@@ -52,6 +52,7 @@ MIDDLEWARE = [
     # 'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.common.CommonMiddleware', # CORS 관련
     'corsheaders.middleware.CorsMiddleware',  # CORS 추가 : 보안설정
 ]
 
@@ -120,10 +121,17 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Cross Origin Resource Sharing
 # CORS 추가 : 같은 와이파이 내에서 내컴퓨터 서버에 들어올 수 있게 해준다.
 # 같은 와이 파이가 아니면 , aws에 올리던지 해서 접속해야함.
-# 즉,. 같은 와이파이 내의 다른 아이피로 내컴퓨터로 접속 할수 있게 한다.
-CORS_ORIGIN_ALLOW_ALL = True
+# ! 즉,. 같은 와이파이 내의 다른 아이피가 내컴퓨터로 접속 할수 있게 한다.
+
+#? 백 서버 실행 & 프론트서버 실행했을때 cors에러가 잘난다.
+# SOP 적용방식을 봐야 한다.
+# <script type=module> 은 로컬에서 실행시 자바스크립트 모듈 보안 요구로 인해 CORS 에러가 발생한다
+# 로컬시스템에서 로컬 파일 리소스를 요청할 때는 origin(출처)이 null로 넘어가기 때문에 CORS에러가 발생한다.
+
+CORS_ORIGIN_ALLOW_ALL=True
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_METHODS = (
@@ -145,4 +153,5 @@ CORS_ALLOW_HEADERS = (
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+		#만약 허용해야할 추가적인 헤더키가 있다면?(사용자정의 키) 여기에 추가하면 됩니다.
 )

@@ -33,6 +33,7 @@ class FeedView(View):
             # # ! 코멘트를 담자 예외처리 피료한겨?
             # comment = list(li.comment.all().only("user.user_name", "comment")) # 특정컬럼 가져오기
             # print('---------------')
+            # print('아이디', li.id)
             # print('이름', li.user.user_name)
             # ! 만약 유저사진이 딱 1개일 경우 절대적으로, get()으로 하면 [0]인덱스로 접근하지 않아도 된다.
             # 여러게를 한번에 받아오는 방법알아보기, [0]으로 접근하는 방법 말고 다른 방법은 뭐가 있을지 알아보자.
@@ -49,6 +50,7 @@ class FeedView(View):
                     pass
                   
             result.append({
+                'id' : li.id,
                 'author':li.user.user_name, # FK일 경우, models.py에서 지정한 컬럼이름과, 실제 대상 테이블의 컬럼명을 입력한다.
                 'author_img': li.user.user_uniq_id.filter(user_id=li.user_id)[0].image_url,
                 'image_url' :li.image_url, 
@@ -57,7 +59,7 @@ class FeedView(View):
                 'comment': check_comment_value(li.comment) # 리스트가 담기죠
             })
         
-        return JsonResponse({'data' : result }, status=200)
+        return JsonResponse({'data' : result, 'user_name' : req.user.user_name }, status=200)
         
           
     
@@ -96,13 +98,20 @@ class CommentView():
     # 뿌려줄 일은 없고, 받으면 comment 테이블에 데이터는 저장해야함.
     @login_required
     def post(self, req):
-        token = req.headers.get('Authorization', None) # 해더에서 담긴 토큰 꺼내기
-        data  = json.loads(req.body) # 바디 데이터 꺼내기
+        # req.user # 로그인한 USER_NAME을 가져온다.
+        # print(req.user)
+        # data  = json.loads(req.body) # 바디 데이터 꺼내기 :: #! feed_id, text
+        # row = Comment.objects.create(user=user_name, comment=data.comment)
+        # row.save()
+        
+        
         return JsonResponse({'message':'음... 코뮁트으'}, status=200)
     
     @login_required
     def get(self, req):
         print(req.user)
         return JsonResponse({'message':'코멩트겟!', }, status=200)
+    
+    
         
         
