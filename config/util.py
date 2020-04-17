@@ -8,12 +8,17 @@ from jwt.exceptions               import InvalidSignatureError #! 이거 뭐여?
 from django.http                  import JsonResponse, HttpResponse
 # from django.core.serializers.json import DjangoJSONEncoder
 
+
+
 # config.utils.py에는 데코레이터를 넣어 사용하나.
 def login_required(func): 
-    # print('데코레이터 접근')
+    print('데코레이터 접근')
     def wrapper(self, req, *args, **kwargs):
-        # print('해더 확인>>>>>>>>>>\n', req.headers['Authorization'])
+        # print(req.headers)
+        print('다시이이이이이ㅣ', req.headers)
+        print('해더 확인>>>>>>>>>>\n', req.headers.get('Authorization', None))
         # ! 보통 딕셔너리의 값을 가져올때 2번인자로 None을 두고, 빈값 에러 나는 것을 방지한다.
+        # print(req.headers.get('Authorization'))
         token = req.headers.get('Authorization', None) # 두번째 인자는 뭐지? 1번인자를 키로검색, 없으면 None을 가져와라!
         # req.headers['Authorization'] # headers딕셔너리의 값을 가져오는 건 같으나, 에러처리가 필요하다.
         if not token: # 토큰이 없으면
@@ -21,7 +26,7 @@ def login_required(func):
             return JsonResponse({'message': 'LOGIN_REQUIRED'}, status=400)
           
         try :
-            token = jwt.decode(token, SECRET_KEY['secret'], ALGORITHM) # jwt로 토큰을 복호화 한다
+            token = jwt.decode(token, SECRET_KEY['secret'], algorithms=ALGORITHM) # jwt로 토큰을 복호화 한다
             user_info = User.objects.get(user_name=token['user_name']) # jwt에 들어있는 user_name의 값을 받는다.
             # DB 데이터 타입이 시간이 들어갈때 json 변환이 잘 되지 않는다. 이럴때 json.dumps를 사용한다.
             # user_info = json.dumps(user_info, cls=DjangoJSONEncoder)
@@ -35,3 +40,4 @@ def login_required(func):
         return func(self, req, *args, **kwargs)        
       
     return wrapper
+  

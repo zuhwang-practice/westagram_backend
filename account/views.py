@@ -64,7 +64,7 @@ class SignIn(View):
                 else:
                     return JsonResponse({'message': '비밀번호 틀림'}, status=400)
             else:
-                return JsonResponse({'message': '없는 유저'}, status=400)
+                return JsonResponse({'message':'UNAUTHORIZED'}, status=401)
     except TypeError:
         JsonResponse({"message" : '타입에러다'}, status=400)
 

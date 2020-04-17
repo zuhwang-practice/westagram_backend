@@ -18,7 +18,13 @@ from django.urls import path, include
 from .views import Index
 
 urlpatterns = [
+    
+    # * 301 에러가 뜬다 ? === 엔드포인트 urls에 /를 확인하자!!
+    
+    # ! 루트에는 '/'가 붙어 있기 때문에 앞에는 '/'가 필요 없으며
+    # ! 뒤에 '/'는 뭔가 계속 시작 될거란 인식때문에 쓰지 안흔ㄴ다?... ㅇ......그냥 뒤에 '/'는 쓰지마!
+    
     path('', Index.as_view()),
-    path('account/', include('account.urls')),
-    path('feed/', include('feed.urls'))
+    path('account', include('account.urls')),
+    path('feed', include('feed.urls'))
 ]
